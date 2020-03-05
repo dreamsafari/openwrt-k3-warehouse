@@ -4,7 +4,7 @@ svn checkout https://github.com/coolsnowwolf/lede/trunk/package/lean/luci-app-fl
 svn checkout https://github.com/coolsnowwolf/lede/trunk/package/lean/openwrt-fullconenat
 svn checkout https://github.com/coolsnowwolf/lede/trunk/package/lean/luci-app-vlmcsd
 svn checkout https://github.com/coolsnowwolf/lede/trunk/package/lean/vlmcsd
-cd /network/config/firewall
+cd ../network/config/firewall
 svn checkout https://github.com/coolsnowwolf/lede/trunk/package/network/config/firewall/patches/
 cd ../../..
 git submodule foreach git pull
