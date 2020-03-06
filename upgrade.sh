@@ -8,3 +8,4 @@ cd ../network/config/firewall
 svn checkout https://github.com/coolsnowwolf/lede/trunk/package/network/config/firewall/patches/
 cd ../../..
 git submodule foreach git pull
+exit 0
