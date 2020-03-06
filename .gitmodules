@@ -1,6 +1,0 @@
-[submodule "dreamsafari/k3screenctrl_build"]
-	path = dreamsafari/k3screenctrl_build
-	url = https://github.com/lwz322/k3screenctrl_build.git
-[submodule "dreamsafari/luci-app-k3screenctrl"]
-	path = dreamsafari/luci-app-k3screenctrl
-	url = https://github.com/lwz322/luci-app-k3screenctrl.git
