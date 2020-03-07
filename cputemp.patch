@@ -1,0 +1,85 @@
+diff -Naur feeds/luci/modules/luci-base/po/zh_Hans/base.po feeds/luci/modules.new/luci-base/po/zh_Hans/base.po
+--- feeds/luci/modules/luci-base/po/zh_Hans/base.po	2020-03-06 15:30:26.264002101 +0000
++++ feeds/luci/modules.new/luci-base/po/zh_Hans/base.po	2020-03-07 04:09:04.000000000 +0000
+@@ -658,6 +658,10 @@
+ msgid "Architecture"
+ msgstr "架构"
+ 
++#: modules/luci-mod-status/htdocs/luci-static/resources/view/status/include/10_system.js:66
++msgid "CPU Temp."
++msgstr "CPU温度"
++
+ #: modules/luci-base/htdocs/luci-static/resources/protocol/static.js:184
+ #: protocols/luci-proto-hnet/htdocs/luci-static/resources/protocol/hnet.js:27
+ msgid ""
+diff -Naur feeds/luci/modules/luci-base/root/usr/libexec/rpcd/luci feeds/luci/modules.new/luci-base/root/usr/libexec/rpcd/luci
+--- feeds/luci/modules/luci-base/root/usr/libexec/rpcd/luci	2020-03-06 15:30:26.264002101 +0000
++++ feeds/luci/modules.new/luci-base/root/usr/libexec/rpcd/luci	2020-03-07 04:23:31.000000000 +0000
+@@ -9,6 +9,14 @@
+ end
+ 
+ local methods = {
++	getCPUInfo = {
++		call = function()
++			local sys = require "luci.sys"
++			local rv = {}
++			rv.cputemp      = sys.exec("echo $(cut -c1-2 /sys/class/thermal/thermal_zone0/temp).$(cut -c3-4 /sys/class/thermal/thermal_zone0/temp)")
++			return rv
++		end
++	},
+ 	getInitList = {
+ 		args = { name = "name" },
+ 		call = function(args)
+diff -Naur feeds/luci/modules/luci-base/root/usr/share/rpcd/acl.d/luci-base.json feeds/luci/modules.new/luci-base/root/usr/share/rpcd/acl.d/luci-base.json
+--- feeds/luci/modules/luci-base/root/usr/share/rpcd/acl.d/luci-base.json	2020-03-06 15:30:26.264002101 +0000
++++ feeds/luci/modules.new/luci-base/root/usr/share/rpcd/acl.d/luci-base.json	2020-03-07 04:25:07.000000000 +0000
+@@ -61,7 +61,7 @@
+ 			"ubus": {
+ 				"file": [ "list", "read", "stat" ],
+ 				"iwinfo": [ "assoclist", "freqlist", "txpowerlist", "countrylist" ],
+-				"luci": [ "getConntrackList", "getInitList", "getLocaltime", "getProcessList", "getRealtimeStats", "getTimezones", "getLEDs", "getUSBDevices", "getSwconfigFeatures", "getSwconfigPortState", "getBlockDevices", "getMountPoints" ],
++				"luci": [ "getConntrackList", "getInitList", "getLocaltime", "getProcessList", "getRealtimeStats", "getTimezones", "getLEDs", "getUSBDevices", "getSwconfigFeatures", "getSwconfigPortState", "getBlockDevices", "getMountPoints", "getCPUInfo" ],
+ 				"luci-rpc": [ "getBoardJSON", "getDHCPLeases", "getDSLStatus", "getDUIDHints", "getHostHints", "getNetworkDevices", "getWirelessDevices" ],
+ 				"network.interface": [ "dump" ],
+ 				"network.rrdns": [ "lookup" ],
+diff -Naur feeds/luci/modules/luci-mod-status/htdocs/luci-static/resources/view/status/include/10_system.js feeds/luci/modules.new/luci-mod-status/htdocs/luci-static/resources/view/status/include/10_system.js
+--- feeds/luci/modules/luci-mod-status/htdocs/luci-static/resources/view/status/include/10_system.js	2020-03-06 15:30:26.272002195 +0000
++++ feeds/luci/modules.new/luci-mod-status/htdocs/luci-static/resources/view/status/include/10_system.js	2020-03-07 04:26:10.000000000 +0000
+@@ -11,7 +11,10 @@
+ 	object: 'system',
+ 	method: 'info'
+ });
+-
++var callCPUInfo = rpc.declare({
++    object: 'luci',
++    method: 'getCPUInfo'
++});
+ return L.Class.extend({
+ 	title: _('System'),
+ 
+@@ -19,6 +22,7 @@
+ 		return Promise.all([
+ 			L.resolveDefault(callSystemBoard(), {}),
+ 			L.resolveDefault(callSystemInfo(), {}),
++			L.resolveDefault(callCPUInfo(), {}),
+ 			fs.lines('/usr/lib/lua/luci/version.lua')
+ 		]);
+ 	},
+@@ -26,7 +30,8 @@
+ 	render: function(data) {
+ 		var boardinfo   = data[0],
+ 		    systeminfo  = data[1],
+-		    luciversion = data[2];
++			cpuinfo     = data[2],
++		    luciversion = data[3];
+ 
+ 		luciversion = luciversion.filter(function(l) {
+ 			return l.match(/^\s*(luciname|luciversion)\s*=/);
+@@ -57,6 +62,7 @@
+ 			_('Kernel Version'),   boardinfo.kernel,
+ 			_('Local Time'),       datestr,
+ 			_('Uptime'),           systeminfo.uptime ? '%t'.format(systeminfo.uptime) : null,
++			_('CPU Temp.'),        cpuinfo.cputemp + " °C",
+ 			_('Load Average'),     Array.isArray(systeminfo.load) ? '%.2f, %.2f, %.2f'.format(
+ 				systeminfo.load[0] / 65535.0,
+ 				systeminfo.load[1] / 65535.0,
