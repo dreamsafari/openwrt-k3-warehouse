@@ -59,7 +59,8 @@ echo "log-facility=/dev/null" >> /etc/dnsmasq.conf
 
 rm -rf /tmp/luci-*
 
-# Set tx power 
+# Set tx power
+sed -i '/wlan. txpower/d' /etc/rc.local
 sed -i '/^exit 0/i\iwconfig wlan1 txpower 29\niwconfig wlan0 txpower 27' /etc/rc.local
 
 exit 0
