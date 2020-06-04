@@ -54,7 +54,7 @@ diff -Naur feeds/luci/modules/luci-mod-status/htdocs/luci-static/resources/view/
 +    object: 'luci',
 +    method: 'getCPUInfo'
 +});
- return L.Class.extend({
+ return baseclass.extend({
  	title: _('System'),
  
 @@ -19,6 +22,7 @@
